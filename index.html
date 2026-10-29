@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Сөздер әлеміне саяхат</title>
+<style>
+:root{--sky:#7fd0ff;--sky2:#c9ecff;--orange:#ff9437;--orange2:#ffc27a;--purple:#8d63e8;--purple2:#d9c8ff;--ink:#2b2b5a;--ok:#22b35e;--bad:#e5484d;--paper:#fffaf0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{margin:0;height:100%;overflow:hidden;background:#2b2b5a;font-family:"Trebuchet MS","Segoe UI",Arial,"DejaVu Sans",sans-serif;color:var(--ink)}
+#stage{position:absolute;left:50%;top:50%;width:1280px;height:720px;transform-origin:center;overflow:hidden;
+background:radial-gradient(ellipse at 20% 10%,#fff6 0,#fff0 40%),linear-gradient(180deg,var(--sky) 0,var(--sky2) 60%,#e8dcff 100%)}
+.bg{position:absolute;pointer-events:none;font-weight:800;opacity:.55;animation:float 6s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-16px) rotate(6deg)}}
+.hill{position:absolute;left:-100px;right:-100px;bottom:-120px;height:230px;border-radius:50%;background:linear-gradient(180deg,#b9a2f5,#8d63e8);box-shadow:0 -10px 0 #d9c8ff}
+.kid{position:absolute;font-size:92px;filter:drop-shadow(0 8px 6px #0003);animation:hop 2.4s ease-in-out infinite}
+@keyframes hop{50%{transform:translateY(-14px)}}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.screen.on{display:flex}
+h1{font-size:76px;margin:0;color:#fff;text-shadow:0 5px 0 var(--purple),0 10px 14px #0004;line-height:1.1}
+h2{font-size:54px;margin:0 0 10px;color:var(--ink)}
+.sub{font-size:32px;font-weight:700;margin:14px 0 36px}
+.btn{font:inherit;font-size:40px;font-weight:800;color:#fff;border:0;border-radius:36px;padding:20px 56px;cursor:pointer;
+background:linear-gradient(180deg,#ffb25e,var(--orange));box-shadow:0 10px 0 #c9631a,0 18px 22px #0003,inset 0 4px 0 #fff6;transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(8px);box-shadow:0 2px 0 #c9631a,0 4px 8px #0003}
+.btn.purple{background:linear-gradient(180deg,#a888f2,var(--purple));box-shadow:0 10px 0 #5a38b0,0 18px 22px #0003,inset 0 4px 0 #fff6}
+.btn.purple:active{box-shadow:0 2px 0 #5a38b0}
+.btn.green{background:linear-gradient(180deg,#52d98a,var(--ok));box-shadow:0 10px 0 #14793f,0 18px 22px #0003,inset 0 4px 0 #fff6}
+.btn[disabled]{opacity:.45;pointer-events:none}
+#hud{position:absolute;left:30px;right:30px;top:20px;display:none;justify-content:space-between;align-items:center;z-index:5}
+#hud.on{display:flex}
+.pill{background:var(--paper);border-radius:30px;padding:10px 30px;font-size:30px;font-weight:800;box-shadow:0 6px 0 #0002,inset 0 3px 0 #fff}
+#game{padding-top:60px}
+#word{font-size:130px;font-weight:800;color:#fff;text-shadow:0 6px 0 var(--purple),0 12px 16px #0004;letter-spacing:4px;min-height:150px;display:flex;align-items:center;gap:0}
+#word .r,#asm .r{color:#ffd23f;text-shadow:0 6px 0 #d97a00,0 12px 16px #0004}
+#word .s,#asm .s{color:#e6d6ff;text-shadow:0 6px 0 #5a38b0,0 12px 16px #0004}
+.zones{display:flex;gap:50px;margin-top:6px}
+.zone{width:340px;height:140px;border-radius:30px;border:6px dashed;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:#fffb;position:relative}
+.zone.root{border-color:var(--orange)}.zone.suf{border-color:var(--purple)}
+.zone b{position:absolute;top:-24px;font-size:30px;padding:2px 24px;border-radius:20px;color:#fff}
+.zone.root b{background:var(--orange)}.zone.suf b{background:var(--purple)}
+.card{font-size:56px;font-weight:800;padding:8px 36px;border-radius:26px;background:var(--paper);box-shadow:0 8px 0 #0003,inset 0 3px 0 #fff;cursor:pointer;transition:transform .1s}
+.card.sel{transform:translateY(-10px) scale(1.1);outline:6px solid var(--purple)}
+.zone .card.r{background:#ffe2b8}.zone .card.s{background:var(--purple2)}
+.pool{display:flex;gap:26px;margin-top:40px;min-height:90px}
+#msg{font-size:44px;font-weight:800;height:60px;margin-top:22px}
+#msg.ok{color:var(--ok)}#msg.bad{color:var(--bad)}
+.actions{margin-top:6px;height:100px}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-14px)}75%{transform:translateX(14px)}}
+.opts{display:flex;gap:40px;margin-top:20px}
+.opt{font-size:76px;padding:20px 54px;border-radius:36px;min-width:230px}
+.opt.good{background:linear-gradient(180deg,#52d98a,var(--ok))!important;box-shadow:0 10px 0 #14793f!important;color:#fff}
+.opt.wrong{background:linear-gradient(180deg,#ff7d82,var(--bad))!important;box-shadow:0 10px 0 #9b2227!important;color:#fff;animation:shake .4s}
+#asm{font-size:130px;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:center;min-height:150px;text-shadow:0 6px 0 var(--purple),0 12px 16px #0004}
+#asm .p{display:inline-block}
+.stars{font-size:100px;letter-spacing:10px;margin:10px 0}
+.stars .off{filter:grayscale(1);opacity:.35}
+.badge{font-size:150px;animation:hop 1.6s infinite}
+.fx{position:absolute;top:-60px;font-size:44px;z-index:20;pointer-events:none;animation:fall 2.2s linear forwards}
+@keyframes fall{to{transform:translateY(820px) rotate(540deg)}}
+.pop{animation:pop .5s}
+@keyframes pop{0%{transform:scale(.4)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.bg,.kid,.badge{animation:none}}
+</style>
+</head>
+<body>
+<div id="stage">
+  <span class="bg" style="left:60px;top:90px;font-size:90px">А</span>
+  <span class="bg" style="right:110px;top:110px;font-size:80px">Ә</span>
+  <span class="bg" style="left:210px;bottom:240px;font-size:70px;animation-delay:1s">Қ</span>
+  <span class="bg" style="right:230px;bottom:260px;font-size:84px;animation-delay:2s">Ұ</span>
+  <span class="bg" style="left:520px;top:40px;font-size:60px;animation-delay:.5s">Ң</span>
+  <span class="bg" style="left:130px;top:340px;font-size:56px;color:#fff">✦</span>
+  <span class="bg" style="right:60px;top:380px;font-size:56px;color:#fff">✦</span>
+  <span class="bg" style="left:700px;top:620px;font-size:56px;color:#fff">✦</span>
+  <div class="hill"></div>
+  <div class="kid" style="left:30px;bottom:30px">🧒</div>
+  <div class="kid" style="right:30px;bottom:30px;animation-delay:1s">👧</div>
+  <div class="kid" style="left:150px;bottom:20px;font-size:64px;animation-delay:.5s">📚</div>
+  <div class="kid" style="right:150px;bottom:20px;font-size:64px;animation-delay:1.4s">📖</div>
+
+  <div id="hud"><div class="pill" id="hStage"></div><div class="pill" id="hTask"></div><div class="pill" id="hScore"></div></div>
+
+  <section class="screen on" id="sStart">
+    <div style="font-size:110px">📖✨</div>
+    <h1>Сөздер әлеміне саяхат</h1>
+    <div class="sub">Түбір мен қосымшаның жазылуы · 3-сынып</div>
+    <button class="btn" id="bStart">Ойынды бастау</button>
+  </section>
+
+  <section class="screen" id="game"></section>
+
+  <section class="screen" id="sRes"></section>
+</div>
+
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+var S1=[["балалар","бала","лар"],["кітаптар","кітап","тар"],["гүлдер","гүл","дер"],["достық","дос","тық"],["өнерлі","өнер","лі"],["суретші","сурет","ші"],["жұмысшы","жұмыс","шы"],["мектепке","мектеп","ке"]];
+var S2=[["кітап",["лар","тар","лер"],"тар"],["гүл",["лар","дер","лер"],"дер"],["мектеп",["ға","ке","қа"],"ке"],["өнер",["лы","лі","ды"],"лі"],["дос",["тық","тік","шы"],"тық"],["сурет",["шы","ші","лы"],"ші"],["бала",["ға","ге","ке"],"ға"],["адам",["дар","дер","тар"],"дар"]];
+var st={stage:1,i:0,score:0,s1:0,s2:0,done:false};
+var stageEl=$("stage");
+
+function fit(){var k=Math.min(innerWidth/1280,innerHeight/720);stageEl.style.transform="translate(-50%,-50%) scale("+k+")"}
+addEventListener("resize",fit);fit();
+
+function show(id){["sStart","game","sRes"].forEach(function(x){$(x).classList.toggle("on",x===id)});$("hud").classList.toggle("on",id==="game")}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function hud(){
+  $("hStage").textContent=st.stage+"-кезең: "+(st.stage===1?"Сөзді бөл!":"Қосымшаны таңда!");
+  $("hTask").textContent="Тапсырма "+(st.i+1)+" / 8";
+  $("hScore").textContent="⭐ Ұпай: "+st.score;
+}
+function confetti(){
+  var e=["⭐","🌟","✨"];
+  for(var i=0;i<26;i++){var f=document.createElement("span");f.className="fx";f.textContent=e[i%3];
+    f.style.left=(Math.random()*1230)+"px";f.style.animationDelay=(Math.random()*.6)+"s";stageEl.appendChild(f);
+    setTimeout((function(n){return function(){n.remove()}})(f),3000)}
+}
+
+/* ---------- 1-кезең ---------- */
+var z,cards,sel;
+function start1Task(){
+  var t=S1[st.i],w=t[0],r=t[1],s=t[2],k=r.length;st.done=false;sel=null;hud();
+  var raw=[[r,"r"],[s,"s"],[w.slice(0,k-1),"x"],[w.slice(k+1),"x"]],seen={},list=[];
+  raw.forEach(function(c){if(c[0]&&!seen[c[0]]){seen[c[0]]=1;list.push(c)}});
+  var extra=[w.slice(0,k+1),w.slice(k-1)];
+  extra.forEach(function(c){if(list.length<4&&c&&!seen[c]){seen[c]=1;list.push([c,"x"])}});
+  cards=shuffle(list).map(function(c,i){return{id:i,t:c[0],kind:c[1]}});
+  z={root:null,suf:null};
+  $("game").innerHTML='<div id="word">'+w+'</div><div class="zones"><div class="zone root" data-z="root"><b>Түбір</b></div><div class="zone suf" data-z="suf"><b>Қосымша</b></div></div><div class="pool" id="pool"></div><div id="msg"></div><div class="actions" id="act"><button class="btn green" id="bCheck">Тексеру</button></div>';
+  draw1();
+  $("bCheck").onclick=check1;
+  document.querySelectorAll(".zone").forEach(function(el){el.onclick=function(){putZone(el.getAttribute("data-z"))}});
+}
+function cardEl(c,cls){var d=document.createElement("div");d.className="card "+(cls||"");d.textContent=c.t;return d}
+function draw1(){
+  var pool=$("pool");pool.innerHTML="";
+  document.querySelectorAll(".zone").forEach(function(el){var c=el.querySelector(".card");if(c)c.remove()});
+  cards.forEach(function(c){
+    var inZone=(z.root===c.id)?"root":(z.suf===c.id)?"suf":null;
+    var d=cardEl(c,(sel===c.id?"sel":"")+(inZone?(inZone==="root"?" r":" s"):""));
+    d.onclick=function(ev){ev.stopPropagation();if(st.done)return;
+      if(inZone){z[inZone]=null;sel=null}else{sel=(sel===c.id?null:c.id)}draw1()};
+    if(inZone){document.querySelector('.zone[data-z="'+inZone+'"]').appendChild(d)}else{pool.appendChild(d)}
+  });
+}
+function putZone(name){
+  if(st.done||sel===null)return;
+  z[name]=sel;
+  var other=name==="root"?"suf":"root";if(z[other]===sel)z[other]=null;
+  sel=null;draw1();
+}
+function check1(){
+  if(st.done)return;var m=$("msg"),t=S1[st.i];
+  if(z.root===null||z.suf===null){m.className="bad";m.textContent="Екі аймаққа да карточка қой!";return}
+  var rt=cards[z.root].t,sf=cards[z.suf].t;
+  if(rt===t[1]&&sf===t[2]){
+    st.done=true;st.score++;st.s1++;hud();
+    $("word").innerHTML='<span class="r">'+t[1]+'</span><span class="s">'+t[2]+'</span>';$("word").classList.add("pop");
+    m.className="ok";m.textContent="✅ Жарайсың!";confetti();
+    $("act").innerHTML='<button class="btn" id="bNext">'+(st.i<7?"Келесі":"Нәтиже")+'</button>';
+    $("bNext").onclick=function(){st.i++;if(st.i<8)start1Task();else result()};
+  }else{
+    m.className="bad";m.textContent="❌ Қайта байқап көр!";
+    document.querySelector(".zones").classList.remove("shake");void document.querySelector(".zones").offsetWidth;document.querySelector(".zones").classList.add("shake");
+    z={root:null,suf:null};sel=null;draw1();
+  }
+}
+
+/* ---------- 2-кезең ---------- */
+function start2Task(){
+  var t=S2[st.i];st.done=false;hud();
+  $("game").innerHTML='<div id="asm"><span class="p r">'+t[0]+'</span><span class="p" style="margin:0 22px;color:#fff">+</span><span class="p" style="color:#fff">...</span></div><div class="opts" id="opts"></div><div id="msg"></div><div class="actions" id="act"></div>';
+  var o=$("opts");
+  shuffle(t[1]).forEach(function(v){
+    var b=document.createElement("button");b.className="btn purple opt";b.textContent="-"+v;
+    b.onclick=function(){pick(b,v)};o.appendChild(b);
+  });
+}
+function pick(b,v){
+  if(st.done)return;var t=S2[st.i],m=$("msg");
+  if(v===t[2]){
+    st.done=true;st.score++;st.s2++;hud();b.classList.add("good");
+    document.querySelectorAll(".opt").forEach(function(x){if(x!==b)x.setAttribute("disabled","")});
+    $("asm").innerHTML='<span class="p r">'+t[0]+'</span><span class="p" style="margin:0 20px;color:#fff">+</span><span class="p s">-'+t[2]+'</span><span class="p" style="margin:0 20px;color:#fff">=</span><span class="p pop" style="color:#fff">'+t[0]+t[2]+'</span>';
+    m.className="ok";m.textContent="✅ Жарайсың!";confetti();
+    $("act").innerHTML='<button class="btn" id="bNext">'+(st.i<7?"Келесі":"Нәтиже")+'</button>';
+    $("bNext").onclick=function(){st.i++;if(st.i<8)start2Task();else result()};
+  }else{
+    b.classList.remove("wrong");void b.offsetWidth;b.classList.add("wrong");
+    m.className="bad";m.textContent="❌ Қайта байқап көр!";
+  }
+}
+
+/* ---------- Нәтижелер ---------- */
+function starsHTML(n){var h='<div class="stars">';for(var i=0;i<3;i++)h+='<span class="'+(i<n?"":"off")+'">⭐</span>';return h+'</div>'}
+function starCount(p,max){var r=p/max;return r>=.85?3:r>=.55?2:1}
+function praise(n){return n===3?"Сөз шебері!":n===2?"Тамаша нәтиже!":"Жарайсың!"}
+function result(){
+  show("sRes");confetti();
+  if(st.stage===1){
+    var n=starCount(st.s1,8);
+    $("sRes").innerHTML='<h2>1-кезең аяқталды!</h2>'+starsHTML(n)+'<div class="sub">'+praise(n)+' Дұрыс жауап: '+st.s1+' / 8</div><button class="btn purple" id="bGo">2-кезеңге өту</button>';
+    $("bGo").onclick=function(){st.stage=2;st.i=0;show("game");start2Task()};
+  }else if(!st.final){
+    st.final=true;var n2=starCount(st.s2,8);
+    $("sRes").innerHTML='<h2>2-кезең аяқталды!</h2>'+starsHTML(n2)+'<div class="sub">'+praise(n2)+' Дұрыс жауап: '+st.s2+' / 8</div><button class="btn purple" id="bGo">Қорытынды</button>';
+    $("bGo").onclick=finale;
+  }
+}
+function finale(){
+  var n=starCount(st.score,16),aw=n===3?"🏆":n===2?"🥈":"🥉";
+  $("sRes").innerHTML='<div class="badge">'+aw+'</div><h1 style="font-size:64px">'+praise(n)+'</h1>'+starsHTML(n)+'<div class="sub">Жалпы ұпай: '+st.score+' / 16<br>1-кезең: '+st.s1+' · 2-кезең: '+st.s2+'</div><button class="btn" id="bAgain">Қайта ойнау</button>';
+  $("bAgain").onclick=restart;confetti();
+}
+function restart(){st={stage:1,i:0,score:0,s1:0,s2:0,done:false,final:false};show("game");start1Task()}
+
+$("bStart").onclick=restart;
+})();
+</script>
+</body>
+</html>
